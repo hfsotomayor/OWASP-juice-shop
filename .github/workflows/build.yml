@@ -5,22 +5,30 @@ on:
     branches:
       - master
 
-
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
-    
+
     steps:
+      # Paso para hacer checkout del código fuente
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      # Paso para ejecutar el análisis con SonarQube
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
+
+      # Paso para ejecutar Dependency-Check
+      - name: Run Dependency-Check
+        run: |
+          dependency-check --project "OWASP-juice-shop" --scan . --format "ALL" --out "./dependency-check-report"
+
+      # Paso opcional para verificar la puerta de calidad de SonarQube
+      # Si deseas que el job falle cuando la Quality Gate esté en rojo, descomenta las líneas siguientes.
       # - uses: sonarsource/sonarqube-quality-gate-action@master
       #   timeout-minutes: 5
       #   env:
